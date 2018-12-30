@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="EUC-KR">
+<title>Insert title here</title>
+</head>
+<body>
+<%if(contents.length>0){%>
+        <%var i = 0;%>
+        <%contents.forEach(function(item){%>
+        <%i++;%>
+        <tr>
+            <td class="number"><%=i%></td>
+            <td class="title"><a href="/boards/view?id=<%=item._id%>"><%=item.title%></a></td>
+            <td class="writer"><%=item.writer%></td>
+            <td class="date"><%=dateFormatChange(item.date)%></td>
+            <td class="cnt"><%=item.count%></td>
+        </tr>
+        <%})%>
+        <%} else {%>
+        <tr>
+            <td colspan="5">게시물이 없습니다.</td>
+        </tr>
+<%}%>
+<div class="write_form">
+        <form id="writeAction" action="/boards" method="post">
+            <input type="text" class="inputSubject" id="addContentSubject" name="addContentSubject" placeholder="제목">
+            <input type="text" class="inputWriter" id="addContentWriter" name="addContentWriter" placeholder="작성자">
+            <input type="password" class="inputPassword" id="addContentPassword" name=addContentPassword" placeholder="비밀번호">
+            <textarea class="textContents" id="addContents" name="addContents" rows="20" cols="80"></textarea>
+        </form>
+        <div id = "new" class="addBtngroup">
+            <a onclick="submitContents('add');"><div>SUBMIT</div></a>
+            <a onclick="cancelWriteForm('cancel');"><div>CANCEL</div></a>
+        </div>
+        <script>
+        function submitContents(option) {
+            var title = $('#addContentSubject').val();
+            var content = $('#addContents').val();
+            var writer = $('#addContentWriter').val();
+            var password = $('#addContentPassword').val();
+            if(option == 'add') {
+                // 새 글 등록 시
+                if(title == '' || content == '' || writer == '' || password == '') {
+                    alert("제목과 내용, 작성자 비밀번호 모두 있어야합니다.");
+                    return;
+                } else {
+                    $('#writeAction').submit();
+                }
+            }
+        }
+        router.post('/', function(req, res){
+            // 글 작성하고 submit하게 되면 저장이 되는 부분
+            var addNewTitle = req.body.addContentSubject;
+            var addNewWriter = req.body.addContentWriter;
+            var addNewContent = req.body.addContents;
+            var addNewPasword = req.body.addContentPassword;
+            addBoard(addNewTitle, addNewWriter, addNewContent, addNewPasword);
+            res.redirect('/boards');
+        });
+        function addBoard(title, writer, content, password){
+            var newBoardContents = new BoardContents;
+            
+            newBoardContents.writer = writer;
+            newBoardContents.title = title;
+            newBoardContents.contents = content;
+            newBoardContents.password = password;
+            newBoardContents.save(function (err) {
+                if (err) throw err;
+            });
+        }
+        </script>
+        고, db에서 가져오는 데이터 값들의 위치를 정해주었습니다.
+ 
+<div class="content_box">
+        <div class="content-title"><%=content.title%></div>
+        <div class="content-info">
+            <%=dateFormatChange(content.date)%> / <%=content.writer%>
+        </div>
+        <div class="content-text">
+            <%=content.contents%>
+        </div>
+        <a href="/boards"><div class="content-Btn">확인</div></a>
+    </div>
+    
+    <%
+function dateFormatChange(date) {
+    var options = {
+        weekday: "short", year: "numeric", month: "short",
+        day: "numeric", hour: "2-digit", minute: "2-digit"
+    };
+    return date.toLocaleTimeString("ko-KR", options);
+}
+%>
+    </div>
+    <script>
+    router.get('/view', function(req, res){
+    	   // 글 보는 부분. 글 내용을 출력하고 조회수를 늘려줘야함
+    	    var contentId = req.param('id');
+    	    BoardContents.findOne({_id:contentId}, function(err, rawContent){
+    	        if(err) throw err;
+    	        rawContent.count += 1; // 조회수를 늘려줍니다.
+    	        rawContent.save(function(err){ // 변화된 조횟수 저장
+    	            if(err) throw err;
+    	            res.render('boardDetail',{title: "Board", content:rawContent}); // db에서 가져온 내용을 뷰로 렌더링
+    	        });
+    	    })
+    	});
+    </script>
+</body>
+</html>
