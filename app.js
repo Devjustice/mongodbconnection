@@ -6,7 +6,7 @@ var path = require('path');
 var app = express();
 var mongoose = require('mongoose');
 
-mongoose.connect("mongodb://justice2638:mg0417@ds213513.mlab.com:13513/boardtest", { useNewUrlParser: true });
+mongoose.connect("mongodb://아이디:비번@dsxxxxxx.mlab.com:xxxx/boardtest", { useNewUrlParser: true });
 var db = mongoose.connection;
 db.once("open",function(){
 	console.log("DB CONNECTED");
